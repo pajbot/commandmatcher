@@ -34,6 +34,15 @@ func (m *CommandMatcher) Register(aliases []string, command interface{}) interfa
 	return command
 }
 
+func (m *CommandMatcher) DeregisterAliases(aliases []string) {
+	m.commandsMutex.Lock()
+	defer m.commandsMutex.Unlock()
+
+	for _, alias := range aliases {
+		delete(m.commands, alias)
+	}
+}
+
 func (m *CommandMatcher) Deregister(command interface{}) {
 	m.commandsMutex.Lock()
 	defer m.commandsMutex.Unlock()
@@ -76,4 +85,16 @@ func (m *CommandMatcher) ForEach(cb func([]string, interface{})) {
 	for cmd, aliases := range uniqueCommands {
 		cb(aliases, cmd)
 	}
+}
+
+func (m *CommandMatcher) Find(alias string) interface{} {
+	m.commandsMutex.Lock()
+	defer m.commandsMutex.Unlock()
+
+	cmd, ok := m.commands[alias]
+	if !ok {
+		return nil
+	}
+
+	return cmd
 }
